@@ -1,0 +1,105 @@
+
+	Window station là một kernel object liên kết với process hiện tại, nó có cấu trúc như sau:
+
+	struct tagWINDOWSTATION
+	   +0x000 dwSessionId      : Uint4B
+	   +0x004 rpwinstaNext     : Ptr32 tagWINDOWSTATION
+	   +0x008 rpdeskList       : Ptr32 tagDESKTOP
+	   +0x00c pTerm            : Ptr32 tagTERMINAL
+	   +0x010 dwWSF_Flags      : Uint4B
+	   +0x014 spklList         : Ptr32 tagKL
+	   .......
+	Khi tạo mới một window station object bằng funcion CreateWindowStation, trường spklList sẽ không được khởi tạo và sẽ luôn trỏ đến địa chỉ NULL
+
+	Lỗ hổng xảy ra trong hàm NtUserSetImeInfoEx:
+
+		 if ( winSta )
+		  {
+		    pkl = winSta->spklList;
+		    while ( pkl->hkl != imeInfoEx->hkl )
+		    {
+		      pkl = pkl->pklNext;
+		      if ( pkl == winSta->spklList )
+		        return 0;
+		    }
+		    piiex = pkl->piiex;
+		    if ( !piiex )
+		      return 0;
+		    if ( !piiex->fLoadFlag )
+		      qmemcpy(piiex, imeInfoEx, sizeof(tagIMEINFOEX));
+		    bReturn = 1;
+		  }
+		  return bReturn;
+
+	Cụ thể, sau một số dòng code kiểm tra, hàm này sẽ sử dụng qmemcpy để copy nội dung được chỉ trỏ trường imeInfoEx vào vùng nhớ được trỏ bởi piiex.
+		qmemcpy(piiex, imeInfoEx, sizeof(tagIMEINFOEX));
+	Trong đó, imeInfoEx là một trường thuộc struct tagIMEINFOEX:
+
+		tagIMEINFOEX
+		   +0x000 hkl              : Ptr32 HKL__
+		   +0x004 ImeInfo          : tagIMEINFO
+		   ......
+	Và hàm NtUserSetImeInfoEx nhận parameter là địa chỉ của object tagIMEINFOEX.
+	Tiếp theo, piiex là một trường thuộc struct tagKL, và trường spklList trong tagWINDOWSTATION sẽ trỏ đến tagKL:
+		tagWINDOWSTATION
+			.........
+			+spklList	-------------> struct tagKL
+										.........
+										+piiex
+
+	Kết hợp các điều đã nói ở trên, khi spklList trỏ đến null, hàm NtUserSetImeInfoEx sẽ thực hiện việc copy nội dung từ imeInfoEx đến null address và sinh ra lỗi.
+
+	--------------------------------------------------------
+	Exploit
+		*Note: Tìm địa chỉ cần ghi đè và nội dung dùng để ghi đè
+			Bitmap Kernel Objects
+			Khi một bitmap được tạo, một struct sẽ được thêm vào GdiSharedHandleTable trong PEB. GdiSharedHandleTable là một con trỏ tới một mảng struct GDICELL64
+
+			GDICELL64
+				+0x00 pKernelAddress
+				..........
+
+			Trường pKernelAddress trong GDICELL64 sẽ trỏ đến BASEOBJECT struct có size = 0x18:
+				public struct _BASEOBJECT	{
+				    public IntPtr hHmgr;
+				    public UInt32 ulShareCount;
+				    public UInt16 cExclusiveLock;
+				    public UInt16 BaseFlags;
+				    public UIntPtr Tid;
+				}
+
+			Ngay sau vùng nhớ chứa BASEOBJECT là vùng nhớ chứa SURFOBJ64 struct
+				public struct _SURFOBJ	{
+				    public IntPtr dhsurf;
+				    public IntPtr hsurf;
+				    public IntPtr dhpdev;
+				    public IntPtr hdev;
+				    public IntPtr sizlBitmap;
+				    public UIntPtr cjBits;
+				    public IntPtr pvBits;
+				    public IntPtr pvScan0; /// offset => 32bit = 0x20 & 64bit = 0x38
+				    public UInt32 lDelta;
+				    public UInt32 iUniq;
+				    public UInt32 iBitmapFormat;
+				    public UInt16 iType;
+				    public UInt16 fjBitmap;
+				}
+		Vậy ta có thể tính được địa chỉ của pvScan0 trong 64bit:
+			pvScan0 = pKernelAddress + 0x18 + 0x38
+
+		Trong GDI32 API có 2 hàm cho phép ta thao tác trực tiếp với pvScan0.
+		GetBitmapBits cho phép chúng ta đọc một số lượng byte tùy ý tại địa chỉ pvScan0
+		SetBitmapBits cho phép chúng ta viết một số lượng byte tùy ý tại địa chỉ pvScan0
+
+		Vì vậy, ta sẽ tạo 2 bitmap, tính toàn ra địa chỉ của 2 pvScan0
+
+		Ta sẽ dùng hàm ZwAllocateVirtualMemory để alloc một vùng nhớ tại 0 address, sau đó ghi vào đó 1 struct tagKL giả với các tham số thích hợp cùng với địa chỉ cần ghi đè là địa chỉ của pvScan0 trong bitmap1, địa chỉ này tương ứng với trường piiex.
+
+		Sau đó, ta sẽ tạo một struct tagIMEINFOEX giả, với các trường thích hợp cùng nội dung dùng để ghi đè là địa chỉ của pvScan0 trong bitmap2.
+
+		Sau đó gọi hàm NtUserSetImeInfoEx với tham số là struct tagIMEINFOEX giả, dẫn đến việc ghi địa chỉ của pvScan0_bitmap2 vào pvScan0_bitmap1
+
+		Khi đó, ta dùng hàm SetBitmapBits để set pvScan0 của bitmap1 trỏ tới địa chỉ của hàm NtQueryIntervalProfile
+		Sau đó lại dùng hàm SetBitmapBits để set pvScan0 của bitmap2 bằng shellcode của chúng ta, từ đó dẫn đến việc khi gọi hàm NtQueryIntervalProfile thì shellcode sẽ được thực hiện.
+		Shellcode dùng để leo quyền sẽ thay thế token của process hiện tại thành token của SYSTEM process.
+
