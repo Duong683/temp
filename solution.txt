@@ -23,8 +23,8 @@
 		        return 0;
 		    }
 		    piiex = pkl->piiex;
-		    if ( !piiex )
-		      return 0;
+		    if ( !piiex 
+)		      return 0;
 		    if ( !piiex->fLoadFlag )
 		      qmemcpy(piiex, imeInfoEx, sizeof(tagIMEINFOEX));
 		    bReturn = 1;
@@ -52,6 +52,7 @@
 	--------------------------------------------------------
 	Exploit
 		*Note: Tìm địa chỉ cần ghi đè và nội dung dùng để ghi đè
+		
 			Bitmap Kernel Objects
 			Khi một bitmap được tạo, một struct sẽ được thêm vào GdiSharedHandleTable trong PEB. GdiSharedHandleTable là một con trỏ tới một mảng struct GDICELL64
 
@@ -103,3 +104,7 @@
 		Sau đó lại dùng hàm SetBitmapBits để set pvScan0 của bitmap2 bằng shellcode của chúng ta, từ đó dẫn đến việc khi gọi hàm NtQueryIntervalProfile thì shellcode sẽ được thực hiện.
 		Shellcode dùng để leo quyền sẽ thay thế token của process hiện tại thành token của SYSTEM process.
 
+-------------------------------------------------------------
+GDI Bitmap: http://www.fuzzysecurity.com/tutorials/expDev/21.html
+PoC gốc: https://github.com/unamer/CVE-2018-812
+0
