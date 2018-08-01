@@ -4,3 +4,7 @@ CVE-2018-1111
 
 CVE-2017-2885
   - PoC: https://www.talosintelligence.com/vulnerability_reports/TALOS-2017-0392
+  
+CVE-2016-6814
+  - Info erro: https://snyk.io/vuln/SNYK-JAVA-ORGCODEHAUSGROOVY-31510
+               https://github.com/apache/groovy/commit/09e9778e8a33052d8c27105aee5310649637233d
