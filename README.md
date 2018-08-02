@@ -11,3 +11,4 @@ CVE-2016-6814
                
 CVE-2018-1000140
   - Info: https://www.rsyslog.com/librelp-stack-buffer-overflow-vulnerability-cve-2018-1000140/
+  - PoC: https://lgtm.com/blog/rsyslog_snprintf_CVE-2018-1000140
