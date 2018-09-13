@@ -1,1 +1,2 @@
-https://www.reddit.com/r/netsec/comments/9exop0/a_powershell_example_of_the_windows_zero_day_priv/ 
+https://github.com/OneLogicalMyth/zeroday-powershell
+https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2018-8440
