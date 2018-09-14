@@ -2,3 +2,5 @@ https://blog.talosintelligence.com/2018/09/ms-tuesday.html?utm_source=feedburner
 
 https://threatpost.com/microsoft-patches-three-actively-exploited-bugs-as-part-of-patch-tuesday/137372/
 https://securityaffairs.co/wordpress/76127/security/adobe-patch-tuesday-sept08.html
+
+https://helpx.adobe.com/security/products/flash-player/apsb18-31.html
