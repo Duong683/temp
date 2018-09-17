@@ -1,1 +1,1 @@
-https://www.reddit.com/r/netsec/comments/9f74kq/windows_privilege_escalation_guide/ 
+https://www.reddit.com/r/netsec/comments/9f7665/passingthehash_to_ntlm_authenticated_web/ 
