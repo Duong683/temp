@@ -1,1 +1,1 @@
-https://blogs.msdn.microsoft.com/dotnet/2018/09/11/net-framework-september-2018-security-and-quality-rollup/
+https://www.reddit.com/r/netsec/comments/9f74kq/windows_privilege_escalation_guide/ 
