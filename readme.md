@@ -1,1 +1,1 @@
-https://www.reddit.com/r/netsec/comments/9f7665/passingthehash_to_ntlm_authenticated_web/ 
+https://www.reddit.com/r/netsec/comments/9f9lhy/cve20185240_symantec_management_agent_altiris/ 
