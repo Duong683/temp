@@ -1,1 +1,1 @@
-http://feedproxy.google.com/~r/feedburner/Talos/~3/C5cfjQWIOj8/epee-levin-vuln.html
+https://securityaffairs.co/wordpress/76660/hacking/windows-purevpn-client-flaws.html
