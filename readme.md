@@ -1,10 +1,1 @@
-https://pivotal.io/security/usn-3729-1 
-https://pivotal.io/security/usn-3605-1
-https://pivotal.io/security/usn-3689-1
-https://pivotal.io/security/usn-3739-1
-https://pivotal.io/security/usn-3753-2
-https://pivotal.io/security/usn-3736-1
-https://pivotal.io/security/usn-3744-1
-https://pivotal.io/security/usn-3755-1
-https://pivotal.io/security/usn-3733-1
-https://pivotal.io/security/usn-3759-1
+https://googleprojectzero.blogspot.com/2018/10/365-days-later-finding-and-exploiting.html
